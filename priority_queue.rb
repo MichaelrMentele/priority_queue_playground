@@ -235,6 +235,8 @@ q << TimeDecayElement.new(3, "D", 1)
 ################################################################################
 
 class RelativePriorityQueue
+  attr_reader :elements
+
   def initialize
     @elements = [nil]
   end
@@ -298,6 +300,7 @@ class RelativeDecayElement
   include Comparable
 
   attr_accessor :priority_score, :name
+  attr_reader :value, :times_popped
 
   def initialize(id, name, value)
     @id, @name, @value = id, name, value
@@ -312,7 +315,7 @@ class RelativeDecayElement
   end
 
   def recalculate_priority
-    @priority_score = @value / (@times_popped + 1)
+    @priority_score = @value / (@times_popped + 1.0)
   end
 
   def <=>(other)
@@ -326,4 +329,74 @@ q << RelativeDecayElement.new(1, "B", 100.0)
 q << RelativeDecayElement.new(2, "C", 10.0)
 q << RelativeDecayElement.new(3, "D", 1.0)
 
+1000.times do
+  q.pop_and_push
+end
+
+################################################################################
+
+queue_test = RelativePriorityQueue.new
+id = 0
+count = 1
+100.times do
+  id += 1
+  name = id.to_s
+  # Assuming non even distribution
+  value = [
+    10,
+    9, 9,
+    8, 8, 8,
+    7, 7, 7, 7,
+    6, 6, 6, 6, 6,
+    5, 5, 5, 5, 5, 5,
+    4, 4, 4, 4, 4, 4, 4,
+    3, 3, 3, 3, 3, 3, 3, 3,
+    2, 2, 2, 2, 2, 2, 2, 2, 2,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  ].sample
+
+  # ## assuming even distribution after building range map
+  # value = count
+  # if count < 10
+  #   count += 1
+  # else
+  #   count = 1
+  # end
+
+  queue_test << RelativeDecayElement.new(id, name, value)
+end
+
+elements = queue_test.elements[1..-1]
+
+iterations = 10_000
+iterations.times do
+  queue_test.pop_and_push
+end
+
+elements = queue_test.elements[1..-1]
+
+value_freq_pairs = elements.map do |ele|
+  [ele.value, ele.times_popped]
+end
+
+values_hash = {}
+(1..10).map do |key|
+  key = key
+  values_hash[key] = 0
+end
+
+# Sum the number of pops for each value
+# This is the number of times each bucket is hit
+value_freq_pairs.each do |pair|
+  key = pair[0]
+  freq = pair[1]
+  values_hash[key] += freq
+end
+
+percentages_hash = {}
+values_hash.each do |key, val|
+  percentages_hash[key] = (val / iterations.to_f * 100).round(2)
+end
+
+p percentages_hash
 binding.pry
