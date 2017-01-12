@@ -315,6 +315,7 @@ class RelativeDecayElement
   end
 
   def recalculate_priority
+    # If we just do this the values will continually decay toward 0
     @priority_score = @value / (@times_popped + 1.0)
   end
 
@@ -341,27 +342,27 @@ count = 1
 100.times do
   id += 1
   name = id.to_s
-  # Assuming non even distribution
-  value = [
-    10,
-    9, 9,
-    8, 8, 8,
-    7, 7, 7, 7,
-    6, 6, 6, 6, 6,
-    5, 5, 5, 5, 5, 5,
-    4, 4, 4, 4, 4, 4, 4,
-    3, 3, 3, 3, 3, 3, 3, 3,
-    2, 2, 2, 2, 2, 2, 2, 2, 2,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  ].sample
+  # # Assuming non even distribution
+  # value = [
+  #   10,
+  #   9, 9,
+  #   8, 8, 8,
+  #   7, 7, 7, 7,
+  #   6, 6, 6, 6, 6,
+  #   5, 5, 5, 5, 5, 5,
+  #   4, 4, 4, 4, 4, 4, 4,
+  #   3, 3, 3, 3, 3, 3, 3, 3,
+  #   2, 2, 2, 2, 2, 2, 2, 2, 2,
+  #   1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  # ].sample
 
-  # ## assuming even distribution after building range map
-  # value = count
-  # if count < 10
-  #   count += 1
-  # else
-  #   count = 1
-  # end
+  ## assuming even distribution after building range map
+  value = count
+  if count < 10
+    count += 1
+  else
+    count = 1
+  end
 
   queue_test << RelativeDecayElement.new(id, name, value)
 end
@@ -399,4 +400,23 @@ values_hash.each do |key, val|
 end
 
 p percentages_hash
-binding.pry
+
+################################################################################
+####################### Range Map ##############################################
+################################################################################
+
+# Say we have some list of elements with random values
+queue_test = RelativePriorityQueue.new
+id = 0
+count = 1
+values = (1..5).to_a
+100.times do
+  value = values.sample
+  queue_test << RelativeDecayElement.new(id, name, value)
+end
+
+# For a range map with 3 buckets
+# 1, 2, 2, 3, 3, 5
+# 1: 1, 2
+# 2: 2, 3
+# 3: 3, 5
