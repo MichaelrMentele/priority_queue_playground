@@ -369,17 +369,20 @@ end
 
 elements = queue_test.elements[1..-1]
 
+# Pop X times
 iterations = 10_000
 iterations.times do
   queue_test.pop_and_push
 end
 
+# Get all but the root element
 elements = queue_test.elements[1..-1]
 
 value_freq_pairs = elements.map do |ele|
   [ele.value, ele.times_popped]
 end
 
+# Create a hash to track total freq per prirority
 values_hash = {}
 (1..10).map do |key|
   key = key
